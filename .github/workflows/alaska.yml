@@ -1,0 +1,59 @@
+name: Alaska Award Flight Search
+
+on:
+  # Run daily at 8 AM UTC (midnight PST / 1 AM PDT)
+  schedule:
+    - cron: '0 8 * * *'
+
+  # Allow manual trigger from GitHub UI
+  workflow_dispatch:
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium --with-deps
+
+      - name: Run Alaska search
+        run: python alaska.py
+
+      - name: Upload results as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: alaska-results-${{ github.run_number }}
+          path: |
+            alaska_*.json
+            alaska_*.png
+          retention-days: 30
+
+      - name: Display results summary
+        run: |
+          echo "=== Search Results ==="
+          for f in alaska_*_parsed.json; do
+            if [ -f "$f" ]; then
+              echo ""
+              echo "--- $f ---"
+              cat "$f" | python -c "
+import sys, json
+data = json.load(sys.stdin)
+print(f\"Route: {data.get('origin', '?')} -> {data.get('destination', '?')}\")
+print(f\"Month: {data.get('month', '?')} {data.get('year', '?')}\")
+deals = [f for f in data.get('fares', []) if f.get('is_deal')]
+print(f\"Deals found: {len(deals)}\")
+for d in deals:
+    print(f\"  🔥 {d['date']}: {d['miles']}k + \${d['cash']}\")
+"
+            fi
+          done
