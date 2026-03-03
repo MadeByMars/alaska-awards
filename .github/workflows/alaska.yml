@@ -1,9 +1,9 @@
 name: Alaska Award Flight Search
 
 on:
-  # Run daily at 8 AM UTC (midnight PST / 1 AM PDT)
+  # Run every 30 minutes
   schedule:
-    - cron: '0 8 * * *'
+    - cron: '*/30 * * * *'
 
   # Allow manual trigger from GitHub UI
   workflow_dispatch:
