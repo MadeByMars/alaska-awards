@@ -12,11 +12,15 @@ Requirements:
 
 import asyncio
 import json
+import os
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 from urllib.parse import urlencode
+
+# Output directory for all results
+RESULTS_DIR = "results"
 
 from playwright.async_api import async_playwright
 
@@ -255,16 +259,7 @@ async def fetch_award_calendar(
                     continue
 
             # Get full page content for debugging
-            content = await page.content()
             calendar_data["page_title"] = await page.title()
-
-            # Take a screenshot for debugging
-            screenshot_path = (
-                f"alaska_{params.origin}_{params.destination}_calendar.png"
-            )
-            await page.screenshot(path=screenshot_path)
-            if not silent:
-                print(f"Screenshot saved to {screenshot_path}")
 
         except Exception as e:
             calendar_data["error"] = str(e)
@@ -328,7 +323,7 @@ async def search_awards(
     result = await fetch_award_calendar(params, silent=silent)
 
     if save_results:
-        output_file = f"alaska_{origin}_{destination}_raw.json"
+        output_file = f"{RESULTS_DIR}/alaska_{origin}_{destination}_raw.json"
         with open(output_file, "w") as f:
             json.dump(result, f, indent=2, default=str)
         if not silent:
@@ -352,7 +347,7 @@ async def search_awards(
                 filtered_calendar.print_table(highlight_below=highlight_below)
 
             if save_results:
-                parsed_output = f"alaska_{origin}_{destination}_parsed.json"
+                parsed_output = f"{RESULTS_DIR}/alaska_{origin}_{destination}_parsed.json"
                 parsed_data = {
                     "origin": filtered_calendar.origin,
                     "destination": filtered_calendar.destination,
@@ -470,6 +465,9 @@ async def main():
             "adults": 2,
         },
     ]
+
+    # Create results directory if it doesn't exist
+    os.makedirs(RESULTS_DIR, exist_ok=True)
 
     print("Starting parallel search for all routes...")
     print(f"Searching {len(searches)} routes concurrently...\n")

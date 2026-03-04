@@ -31,12 +31,7 @@ jobs:
 
       - name: Display results and check for deals
         id: summary
-        run: |
-          {
-            echo 'CONTENT<<EOF'
-            python .github/scripts/summarize.py
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
+        run: python .github/scripts/summarize.py
 
       - name: Send email notification
         if: steps.summary.outputs.has_deals == 'true'
