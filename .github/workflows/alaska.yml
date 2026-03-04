@@ -29,14 +29,29 @@ jobs:
       - name: Run Alaska search
         run: python alaska.py
 
-      - name: Upload results as artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: alaska-results-${{ github.run_number }}
-          path: |
-            alaska_*.json
-            alaska_*.png
-          retention-days: 30
+      - name: Display results and check for deals
+        id: summary
+        run: |
+          {
+            echo 'CONTENT<<EOF'
+            python .github/scripts/summarize.py
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Display results summary
-        run: python .github/scripts/summarize.py
+      - name: Send email notification
+        if: steps.summary.outputs.has_deals == 'true'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "🔥 Alaska Award DEALS Found! (${{ steps.summary.outputs.deals_count }} deals)"
+          to: a11223d@gmail.com
+          from: Alaska Award Bot
+          body: |
+            ${{ steps.summary.outputs.CONTENT }}
+            
+            ---
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
