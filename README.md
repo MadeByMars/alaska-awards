@@ -1,13 +1,22 @@
 # Alaska Airlines Award Flight Scraper
 
-Automatically search for Alaska Airlines award flight availability and get notified of deals.
+Automatically search for Alaska Airlines award flight availability and get notified of deals via email.
 
 ## Features
 
 - 🔍 Search multiple routes in parallel
-- 🔥 Highlight deals below your threshold
+- 🔥 Highlight deals below your mileage threshold
 - 📅 Filter by date range
-- ⏰ Scheduled daily searches via GitHub Actions
+- ⏰ Scheduled searches every 10 minutes via GitHub Actions
+- 📧 Email notifications when deals are found
+
+## Current Routes
+
+| Route | Date Range | Deal Threshold |
+|-------|------------|----------------|
+| TPE → BA3 | Mar 25-29, 2026 | < 175k miles |
+| TYO → BA3 | Mar 25-29, 2026 | < 150k miles |
+| ICN → BA3 | Mar 25-29, 2026 | < 150k miles |
 
 ## Local Usage
 
@@ -20,35 +29,41 @@ playwright install chromium
 python alaska.py
 ```
 
+Results are saved to the `results/` directory.
+
 ## GitHub Actions Setup
 
-This repo includes a GitHub Actions workflow that runs daily at 8 AM UTC.
+The workflow runs every 10 minutes and sends an email when deals are found.
 
-### Quick Setup
+### 1. Enable GitHub Actions
 
-1. Create a new GitHub repository
-2. Push this code to the repository:
-   ```bash
-   cd /Users/mahaojun/scripts
-   git init
-   git add .
-   git commit -m "Initial commit: Alaska award flight scraper"
-   git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/alaska-awards.git
-   git push -u origin main
-   ```
+1. Go to your repo → **Actions** tab
+2. Click **"I understand my workflows, go ahead and enable them"**
 
-3. Go to your repo on GitHub → **Actions** tab
-4. Click **"I understand my workflows, go ahead and enable them"**
-5. The workflow will run automatically daily, or click **"Run workflow"** to trigger manually
+### 2. Set Up Email Notifications
+
+1. Create a Gmail App Password:
+   - Go to https://myaccount.google.com/apppasswords
+   - Generate a new app password for "Mail"
+
+2. Add secrets to your repo:
+   - Go to **Settings** → **Secrets and variables** → **Actions**
+   - Add `EMAIL_USERNAME`: your Gmail address
+   - Add `EMAIL_PASSWORD`: the 16-character app password
+
+### 3. Run the Workflow
+
+- **Manual**: Actions → "Alaska Award Flight Search" → "Run workflow"
+- **Automatic**: Runs every 10 minutes
 
 ### View Results
 
-- Go to **Actions** → click on a workflow run
-- **Artifacts**: Download JSON/PNG results
-- **Logs**: See deals summary in the "Display results summary" step
+- **Logs**: Actions → click workflow run → "Display results and check for deals"
+- **Email**: Sent automatically when deals are found
 
 ## Configuration
+
+### Modify Routes
 
 Edit `alaska.py` to modify searches in the `main()` function:
 
@@ -60,20 +75,37 @@ searches = [
         "outbound_date": "2026-03-10",
         "date_range_start": "2026-03-09",
         "date_range_end": "2026-03-16",
-        "highlight_below": 175,
+        "highlight_below": 175,  # Alert if below this mileage
         "adults": 2,
     },
-    # Add more routes here...
+    # Add more routes...
 ]
 ```
 
-## Schedule
+### Change Schedule
 
-Edit `.github/workflows/alaska.yml` to change the schedule:
+Edit `.github/workflows/alaska.yml`:
 
 ```yaml
 schedule:
-  - cron: '0 8 * * *'  # Daily at 8 AM UTC
+  - cron: '*/10 * * * *'  # Every 10 minutes
 ```
 
 [Cron syntax reference](https://crontab.guru/)
+
+## Project Structure
+
+```
+.
+├── alaska.py                      # Main scraper script
+├── requirements.txt               # Python dependencies
+├── .gitignore                     # Ignore results/ directory
+├── .github/
+│   ├── workflows/
+│   │   └── alaska.yml             # GitHub Actions workflow
+│   └── scripts/
+│       └── summarize.py           # Results summary script
+└── results/                       # Output directory (gitignored)
+    ├── alaska_*_raw.json          # Raw API responses
+    └── alaska_*_parsed.json       # Parsed flight data
+```

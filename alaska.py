@@ -347,7 +347,9 @@ async def search_awards(
                 filtered_calendar.print_table(highlight_below=highlight_below)
 
             if save_results:
-                parsed_output = f"{RESULTS_DIR}/alaska_{origin}_{destination}_parsed.json"
+                parsed_output = (
+                    f"{RESULTS_DIR}/alaska_{origin}_{destination}_parsed.json"
+                )
                 parsed_data = {
                     "origin": filtered_calendar.origin,
                     "destination": filtered_calendar.destination,
@@ -410,33 +412,6 @@ def print_result(
 async def main():
     # Define all searches
     searches = [
-        {
-            "origin": "BA3",
-            "destination": "TPE",
-            "outbound_date": "2026-03-10",
-            "date_range_start": "2026-03-09",
-            "date_range_end": "2026-03-16",
-            "highlight_below": 175,
-            "adults": 2,
-        },
-        {
-            "origin": "BA3",
-            "destination": "TYO",
-            "outbound_date": "2026-03-10",
-            "date_range_start": "2026-03-09",
-            "date_range_end": "2026-03-16",
-            "highlight_below": 150,
-            "adults": 2,
-        },
-        {
-            "origin": "BA3",
-            "destination": "ICN",
-            "outbound_date": "2026-03-10",
-            "date_range_start": "2026-03-09",
-            "date_range_end": "2026-03-16",
-            "highlight_below": 150,
-            "adults": 2,
-        },
         {
             "origin": "TPE",
             "destination": "BA3",
