@@ -413,31 +413,14 @@ async def main():
     # Define all searches
     searches = [
         {
-            "origin": "TPE",
+            "origin": "PPT",
             "destination": "BA3",
-            "outbound_date": "2026-03-10",
-            "date_range_start": "2026-03-25",
-            "date_range_end": "2026-03-29",
-            "highlight_below": 175,
+            "outbound_date": "2026-09-12",
+            "date_range_start": "2026-09-12",
+            "date_range_end": "2026-09-12",
+            "highlight_below": 50,
             "adults": 2,
-        },
-        {
-            "origin": "TYO",
-            "destination": "BA3",
-            "outbound_date": "2026-03-10",
-            "date_range_start": "2026-03-25",
-            "date_range_end": "2026-03-29",
-            "highlight_below": 150,
-            "adults": 2,
-        },
-        {
-            "origin": "ICN",
-            "destination": "BA3",
-            "outbound_date": "2026-03-10",
-            "date_range_start": "2026-03-25",
-            "date_range_end": "2026-03-29",
-            "highlight_below": 150,
-            "adults": 2,
+            "fare_type": "Lowest+price+available",
         },
     ]
 
@@ -457,6 +440,7 @@ async def main():
             date_range_end=s["date_range_end"],
             highlight_below=s["highlight_below"],
             adults=s["adults"],
+            fare_type=s.get("fare_type", "Partner+Business"),
             silent=True,
         )
         for s in searches

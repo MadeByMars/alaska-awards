@@ -14,9 +14,7 @@ Automatically search for Alaska Airlines award flight availability and get notif
 
 | Route | Date Range | Deal Threshold |
 |-------|------------|----------------|
-| TPE → BA3 | Mar 25-29, 2026 | < 175k miles |
-| TYO → BA3 | Mar 25-29, 2026 | < 150k miles |
-| ICN → BA3 | Mar 25-29, 2026 | < 150k miles |
+| PPT → BA3 | Sep 12, 2026 | < 50k miles |
 
 ## Local Usage
 
@@ -70,12 +68,12 @@ Edit `alaska.py` to modify searches in the `main()` function:
 ```python
 searches = [
     {
-        "origin": "BA3",
-        "destination": "TPE",
-        "outbound_date": "2026-03-10",
-        "date_range_start": "2026-03-09",
-        "date_range_end": "2026-03-16",
-        "highlight_below": 175,  # Alert if below this mileage
+        "origin": "PPT",
+        "destination": "BA3",
+        "outbound_date": "2026-09-12",
+        "date_range_start": "2026-09-12",
+        "date_range_end": "2026-09-12",
+        "highlight_below": 50,  # Alert if below this mileage
         "adults": 2,
     },
     # Add more routes...
