@@ -12,9 +12,10 @@ Automatically search for Alaska Airlines award flight availability and get notif
 
 ## Current Routes
 
-| Route | Date Range | Deal Threshold |
-|-------|------------|----------------|
-| PPT → BA3 | Sep 12, 2026 | < 50k miles |
+| Search | Route | Date Range | Deal Threshold |
+|--------|-------|------------|----------------|
+| Partner Premium | PPT → BA3 | Sep 12, 2026 | < 50k miles |
+| Partner Business | PPT → BA3 | Sep 12, 2026 | < 80k miles |
 
 ## Local Usage
 
@@ -28,6 +29,7 @@ python alaska.py
 ```
 
 Results are saved to the `results/` directory.
+Each search now writes separate raw and parsed files so multiple cabin searches on the same route do not overwrite each other.
 
 ## GitHub Actions Setup
 
@@ -75,10 +77,29 @@ searches = [
         "date_range_end": "2026-09-12",
         "highlight_below": 50,  # Alert if below this mileage
         "adults": 2,
+        "fare_type": FARE_TYPES["partner_premium"],
+        "search_name": "Partner Premium",
+    },
+    {
+        "origin": "PPT",
+        "destination": "BA3",
+        "outbound_date": "2026-09-12",
+        "date_range_start": "2026-09-12",
+        "date_range_end": "2026-09-12",
+        "highlight_below": 80,  # Alert if below this mileage
+        "adults": 2,
+        "fare_type": FARE_TYPES["partner_business"],
+        "search_name": "Partner Business",
     },
     # Add more routes...
 ]
 ```
+
+Available fare types:
+
+- `FARE_TYPES["lowest"]` → `Lowest+price+available`
+- `FARE_TYPES["partner_premium"]` → `Partner+Premium`
+- `FARE_TYPES["partner_business"]` → `Partner+Business`
 
 ### Change Schedule
 
@@ -104,6 +125,6 @@ schedule:
 │   └── scripts/
 │       └── summarize.py           # Results summary script
 └── results/                       # Output directory (gitignored)
-    ├── alaska_*_raw.json          # Raw API responses
-    └── alaska_*_parsed.json       # Parsed flight data
+    ├── alaska_*_raw.json          # Raw API responses, one file per search
+    └── alaska_*_parsed.json       # Parsed flight data, one file per search
 ```

@@ -28,11 +28,16 @@ def main():
 
         origin = data.get("origin", "?")
         destination = data.get("destination", "?")
+        search_name = data.get("search_name")
+        fare_type = data.get("fare_type", "?")
         date_range = data.get("date_range", {})
         threshold = data.get("highlight_threshold", "?")
 
         log(f"\n{'#' * 60}")
+        if search_name:
+            log(f"  Search: {search_name}")
         log(f"  Route: {origin} -> {destination}")
+        log(f"  Fare type: {fare_type}")
         log(f"  Period: {date_range.get('start', '?')} to {date_range.get('end', '?')}")
         log(f"  Deal threshold: < {threshold}k miles")
         log(f"{'#' * 60}")

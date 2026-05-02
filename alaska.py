@@ -22,6 +22,13 @@ from urllib.parse import urlencode
 # Output directory for all results
 RESULTS_DIR = "results"
 
+# Known Alaska award calendar fare types for future searches.
+FARE_TYPES = {
+    "lowest": "Lowest+price+available",
+    "partner_premium": "Partner+Premium",
+    "partner_business": "Partner+Business",
+}
+
 from playwright.async_api import async_playwright
 
 
@@ -160,6 +167,11 @@ def parse_calendar_text(raw_text: str, year: int = 2026) -> CalendarResult:
     )
 
 
+def slugify_fare_type(fare_type: str) -> str:
+    """Convert a fare type into a filesystem-friendly suffix."""
+    return re.sub(r"[^a-z0-9]+", "_", fare_type.lower()).strip("_")
+
+
 @dataclass
 class FlightSearchParams:
     origin: str
@@ -167,7 +179,7 @@ class FlightSearchParams:
     outbound_date: str
     adults: int = 1
     round_trip: bool = False
-    fare_type: str = "Partner+Business"
+    fare_type: str = FARE_TYPES["partner_business"]
     shopping_method: str = "onlineaward"
     locale: str = "en-us"
 
@@ -280,7 +292,8 @@ async def search_awards(
     date_range_end: str,
     highlight_below: int = 175,
     adults: int = 2,
-    fare_type: str = "Partner+Business",
+    fare_type: str = FARE_TYPES["partner_business"],
+    search_name: Optional[str] = None,
     save_results: bool = True,
     silent: bool = False,
 ) -> Optional[CalendarResult]:
@@ -295,7 +308,8 @@ async def search_awards(
         date_range_end: End of date filter range (YYYY-MM-DD)
         highlight_below: Highlight fares below this mileage threshold
         adults: Number of passengers
-        fare_type: Fare type (e.g., "Partner+Business")
+        fare_type: Fare type (e.g., FARE_TYPES["partner_business"])
+        search_name: Optional label for display and saved result files
         save_results: Whether to save results to JSON files
         silent: If True, suppress output during fetch (for parallel execution)
 
@@ -310,20 +324,24 @@ async def search_awards(
         round_trip=False,
         fare_type=fare_type,
     )
+    result_suffix = search_name or slugify_fare_type(fare_type)
 
     if not silent:
         print(f"\n{'#'*60}")
         print(f"Searching for award flights:")
+        if search_name:
+            print(f"  Search: {search_name}")
         print(f"  Route: {origin} -> {destination}")
         print(f"  Date range: {date_range_start} to {date_range_end}")
         print(f"  Passengers: {adults}")
+        print(f"  Fare type: {fare_type}")
         print(f"  Highlighting: < {highlight_below}k miles")
         print(f"{'#'*60}")
 
     result = await fetch_award_calendar(params, silent=silent)
 
     if save_results:
-        output_file = f"{RESULTS_DIR}/alaska_{origin}_{destination}_raw.json"
+        output_file = f"{RESULTS_DIR}/alaska_{origin}_{destination}_{result_suffix}_raw.json"
         with open(output_file, "w") as f:
             json.dump(result, f, indent=2, default=str)
         if not silent:
@@ -342,19 +360,23 @@ async def search_awards(
             filtered_calendar.date_range_start = date_range_start
             filtered_calendar.date_range_end = date_range_end
             filtered_calendar.adults = adults
+            filtered_calendar.fare_type = fare_type
+            filtered_calendar.search_name = search_name
 
             if not silent:
                 filtered_calendar.print_table(highlight_below=highlight_below)
 
             if save_results:
                 parsed_output = (
-                    f"{RESULTS_DIR}/alaska_{origin}_{destination}_parsed.json"
+                    f"{RESULTS_DIR}/alaska_{origin}_{destination}_{result_suffix}_parsed.json"
                 )
                 parsed_data = {
                     "origin": filtered_calendar.origin,
                     "destination": filtered_calendar.destination,
                     "month": filtered_calendar.month,
                     "year": filtered_calendar.year,
+                    "fare_type": fare_type,
+                    "search_name": search_name,
                     "date_range": {
                         "start": date_range_start,
                         "end": date_range_end,
@@ -393,13 +415,18 @@ def print_result(
     date_range_end: str,
     highlight_below: int,
     adults: int,
+    fare_type: str,
+    search_name: Optional[str] = None,
 ) -> None:
     """Print search result for a route."""
     print(f"\n{'#'*60}")
     print(f"Results for award flights:")
+    if search_name:
+        print(f"  Search: {search_name}")
     print(f"  Route: {origin} -> {destination}")
     print(f"  Date range: {date_range_start} to {date_range_end}")
     print(f"  Passengers: {adults}")
+    print(f"  Fare type: {fare_type}")
     print(f"  Highlighting: < {highlight_below}k miles")
     print(f"{'#'*60}")
 
@@ -420,7 +447,19 @@ async def main():
             "date_range_end": "2026-09-12",
             "highlight_below": 50,
             "adults": 2,
-            "fare_type": "Lowest+price+available",
+            "fare_type": FARE_TYPES["partner_premium"],
+            "search_name": "Partner Premium",
+        },
+        {
+            "origin": "PPT",
+            "destination": "BA3",
+            "outbound_date": "2026-09-12",
+            "date_range_start": "2026-09-12",
+            "date_range_end": "2026-09-12",
+            "highlight_below": 80,
+            "adults": 2,
+            "fare_type": FARE_TYPES["partner_business"],
+            "search_name": "Partner Business",
         },
     ]
 
@@ -440,7 +479,8 @@ async def main():
             date_range_end=s["date_range_end"],
             highlight_below=s["highlight_below"],
             adults=s["adults"],
-            fare_type=s.get("fare_type", "Partner+Business"),
+            fare_type=s.get("fare_type", FARE_TYPES["partner_business"]),
+            search_name=s.get("search_name"),
             silent=True,
         )
         for s in searches
@@ -462,6 +502,8 @@ async def main():
             date_range_end=search_params["date_range_end"],
             highlight_below=search_params["highlight_below"],
             adults=search_params["adults"],
+            fare_type=search_params.get("fare_type", FARE_TYPES["partner_business"]),
+            search_name=search_params.get("search_name"),
         )
 
 
