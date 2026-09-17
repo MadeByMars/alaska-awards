@@ -14,10 +14,12 @@ Automatically search for Alaska Airlines award flight availability and get notif
 
 | Search | Route | Date Range | Deal Threshold |
 |--------|-------|------------|----------------|
-| Main | SFO → LIR | Dec 26, 2026 | < 50k miles |
-| Main | LIR → SFO | Jan 2, 2027 | < 50k miles |
+| Main (nonstop) | SFO → LIR | Dec 26, 2026 | < 50k miles |
+| Main (nonstop) | LIR → SFO | Jan 2, 2027 | < 50k miles |
 
-Both searches are for 2 adults using `Lowest+price+available`.
+Both searches are for 2 adults using `Lowest+price+available`, restricted to nonstop Main fares. Prices and the below-50k threshold are per passenger.
+
+Nonstop searches use the detailed flight-results page, apply “Nonstop only”, and verify each flight card. They support one exact date per search. Calendar searches remain available by omitting `nonstop_only` or setting it to `False`. Search or parsing failures fail the run instead of being reported as no availability.
 
 ## Local Usage
 
@@ -32,6 +34,8 @@ python alaska.py
 
 Results are saved to the `results/` directory.
 Each search now writes separate raw and parsed files so multiple cabin searches on the same route do not overwrite each other.
+
+Run the parser and failure-handling checks with `python -m unittest -v`.
 
 ## GitHub Actions Setup
 
@@ -81,6 +85,7 @@ searches = [
         "adults": 2,
         "fare_type": FARE_TYPES["lowest"],
         "search_name": "Main",
+        "nonstop_only": True,
     },
     {
         "origin": "LIR",
@@ -92,6 +97,7 @@ searches = [
         "adults": 2,
         "fare_type": FARE_TYPES["lowest"],
         "search_name": "Main",
+        "nonstop_only": True,
     },
     # Add more routes...
 ]
