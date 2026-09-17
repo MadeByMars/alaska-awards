@@ -14,8 +14,10 @@ Automatically search for Alaska Airlines award flight availability and get notif
 
 | Search | Route | Date Range | Deal Threshold |
 |--------|-------|------------|----------------|
-| Partner Premium | PPT → BA3 | Sep 12, 2026 | < 50k miles |
-| Partner Business | PPT → BA3 | Sep 12, 2026 | < 80k miles |
+| Main | SFO → LIR | Dec 26, 2026 | < 50k miles |
+| Main | LIR → SFO | Jan 2, 2027 | < 50k miles |
+
+Both searches are for 2 adults using `Lowest+price+available`.
 
 ## Local Usage
 
@@ -70,26 +72,26 @@ Edit `alaska.py` to modify searches in the `main()` function:
 ```python
 searches = [
     {
-        "origin": "PPT",
-        "destination": "BA3",
-        "outbound_date": "2026-09-12",
-        "date_range_start": "2026-09-12",
-        "date_range_end": "2026-09-12",
+        "origin": "SFO",
+        "destination": "LIR",
+        "outbound_date": "2026-12-26",
+        "date_range_start": "2026-12-26",
+        "date_range_end": "2026-12-26",
         "highlight_below": 50,  # Alert if below this mileage
         "adults": 2,
-        "fare_type": FARE_TYPES["partner_premium"],
-        "search_name": "Partner Premium",
+        "fare_type": FARE_TYPES["lowest"],
+        "search_name": "Main",
     },
     {
-        "origin": "PPT",
-        "destination": "BA3",
-        "outbound_date": "2026-09-12",
-        "date_range_start": "2026-09-12",
-        "date_range_end": "2026-09-12",
-        "highlight_below": 80,  # Alert if below this mileage
+        "origin": "LIR",
+        "destination": "SFO",
+        "outbound_date": "2027-01-02",
+        "date_range_start": "2027-01-02",
+        "date_range_end": "2027-01-02",
+        "highlight_below": 50,  # Alert if below this mileage
         "adults": 2,
-        "fare_type": FARE_TYPES["partner_business"],
-        "search_name": "Partner Business",
+        "fare_type": FARE_TYPES["lowest"],
+        "search_name": "Main",
     },
     # Add more routes...
 ]
